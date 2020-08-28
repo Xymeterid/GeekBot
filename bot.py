@@ -94,7 +94,7 @@ def delete_alias(message):
         bot.reply_to(message, "Alias з таким ім'ям не існує")
 
 
-"""
+
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
@@ -110,8 +110,10 @@ def webhook():
 
 if __name__ == "__main__":
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
-    """
+
+"""
 
 if __name__ == "__main__":
     bot.remove_webhook()
     bot.polling(none_stop=True, interval=0)
+"""
