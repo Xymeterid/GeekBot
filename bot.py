@@ -1,8 +1,9 @@
+import os
 import re
 import telebot
 import anilist_api_logic
 import aliases_manager
-from flask import Flask
+from flask import Flask, request
 
 TOKEN = "1364491220:AAE_T1pkCAiaaeq-fnNkzx1GyIzcfsCzgFQ"
 
@@ -92,7 +93,6 @@ def delete_alias(message):
         bot.reply_to(message, "Alias було видалено")
     else:
         bot.reply_to(message, "Alias з таким ім'ям не існує")
-
 
 
 @server.route('/' + TOKEN, methods=['POST'])
