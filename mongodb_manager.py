@@ -1,0 +1,10 @@
+import pymongo
+
+client = pymongo.MongoClient('mongodb+srv://Xymeterid:007agent007@cluster0.qxfxh.mongodb.net/<dbname>?retryWrites=true&w=majority')
+db = client.gettingStarted
+people = db.people
+
+
+def get(name):
+    return people.find_one({"name.last": name})
+

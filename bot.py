@@ -3,6 +3,7 @@ import re
 import telebot
 import anilist_api_logic
 import aliases_manager
+import mongodb_manager
 from flask import Flask, request
 
 TOKEN = "1364491220:AAE_T1pkCAiaaeq-fnNkzx1GyIzcfsCzgFQ"
@@ -95,6 +96,12 @@ def delete_alias(message):
         bot.reply_to(message, "Alias з таким ім'ям не існує")
 
 
+@bot.message_handler(commands=['test'])
+def test_db(message):
+    result = mongodb_manager.get("Turing")
+    bot.reply_to(message, result["views"], parse_mode="HTML")
+
+
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
@@ -116,4 +123,6 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     bot.remove_webhook()
     bot.polling(none_stop=True, interval=0)
+    
 """
+
