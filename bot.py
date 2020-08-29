@@ -2,8 +2,7 @@ import os
 import re
 import telebot
 import anilist_api_logic
-import aliases_manager
-import mongodb_manager
+import service
 from flask import Flask, request
 
 TOKEN = "1364491220:AAE_T1pkCAiaaeq-fnNkzx1GyIzcfsCzgFQ"
@@ -63,22 +62,23 @@ def add_alias(message):
     key = (splits[0]).strip().lower()
     value = (splits[1]).strip().lower()
 
-    result = aliases_manager.add_alias(key, value)
+    result = service.aliases_service.insert_alias(key, value, message.from_user.username)
 
     if result == 1:
         bot.reply_to(message, "Alias було успіно додано")
-    if result == 0:
-        bot.reply_to(message, "Alias вже існує, тому зміна не відбулась")
+    if result == 2:
+        bot.reply_to(message, "Alias було успішно змінено")
 
 
 @bot.message_handler(commands=['show_aliases'])
 def show_all_aliases(message):
-    data = aliases_manager.get_all_aliases()
+    data = list(service.aliases_service.get_all_aliases())
     if len(data) == 0:
         bot.reply_to(message, "Список alias наразі пустий")
+        return
     res = ""
-    for key, value in data.items():
-        res += "• " + key + " == " + value + "\n"
+    for alias in data:
+        res += "• " + alias['alias_key'] + " == " + alias['alias_value'] + "\n"
     bot.reply_to(message, res, parse_mode="HTML")
 
 
@@ -89,17 +89,11 @@ def delete_alias(message):
         bot.reply_to(message, empty_alias_delete_request)
         return
 
-    res = aliases_manager.delete_alias(message_text)
-    if res == 1:
+    res = service.aliases_service.delete_alias(message_text)
+    if res.deleted_count >= 1:
         bot.reply_to(message, "Alias було видалено")
     else:
         bot.reply_to(message, "Alias з таким ім'ям не існує")
-
-
-@bot.message_handler(commands=['test'])
-def test_db(message):
-    result = mongodb_manager.get("Turing")
-    bot.reply_to(message, result["views"], parse_mode="HTML")
 
 
 @server.route('/' + TOKEN, methods=['POST'])

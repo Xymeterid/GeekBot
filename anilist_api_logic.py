@@ -1,5 +1,5 @@
 import requests
-import aliases_manager
+import service.aliases_service
 
 url = 'https://graphql.anilist.co'
 
@@ -25,8 +25,8 @@ anime_name_search_reply_pattern = '''
 
 
 def find_anime_by_name_on_anilist(anime_name):
-    if aliases_manager.alias_exists(anime_name):
-        anime_name = aliases_manager.get_alias(anime_name)
+    if service.aliases_service.find_alias(anime_name) is not None:
+        anime_name = service.aliases_service.find_alias(anime_name)["alias_value"]
 
     response = requests.post(url, json={'query': anime_name_search_query, 'variables': {'search': anime_name}})
 
