@@ -15,6 +15,7 @@ server = Flask(__name__)
 
 apihelper.ENABLE_MIDDLEWARE = True
 
+IS_HEROKU = 1
 
 @bot.middleware_handler(update_types=['message'])
 def modify_message(bot_instance, message):
@@ -129,7 +130,7 @@ def webhook():
 
 
 if __name__ == "__main__":
-    if os.environ['IS_HEROKU'] == 1:
+    if IS_HEROKU == 1:
         server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
     else:
         bot.remove_webhook()
