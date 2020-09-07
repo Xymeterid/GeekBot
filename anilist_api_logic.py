@@ -1,5 +1,5 @@
 import requests
-import service.aliases_service
+import dao.aliases_dao
 
 url = 'https://graphql.anilist.co'
 
@@ -12,14 +12,34 @@ query ($search: String) {
     }
     siteUrl
     idMal
+    id
     description
     isAdult
   }
 }
 '''
 
+anime_user_list_search_query = """
+query ($userName: String, $titleId: Int) { 
+  MediaList (userName: $userName, mediaId: $titleId){
+    media{
+      title{
+        english
+      }
+    }
+    score
+  }
+}
+"""
+
+
+def find_anime_in_users_anilist(title_id, username):
+    return requests.post(url, json={'query': anime_user_list_search_query,
+                                    'variables': {'userName': username, 'titleId': title_id}})
+
+
 def find_anime_by_name_on_anilist(anime_name):
-    if service.aliases_service.find_alias(anime_name) is not None:
-        anime_name = service.aliases_service.find_alias(anime_name)["alias_value"]
+    if dao.aliases_dao.find(anime_name) is not None:
+        anime_name = dao.aliases_dao.find(anime_name)["alias_value"]
 
     return requests.post(url, json={'query': anime_name_search_query, 'variables': {'search': anime_name}})
