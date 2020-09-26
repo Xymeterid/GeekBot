@@ -15,7 +15,7 @@ server = Flask(__name__)
 
 apihelper.ENABLE_MIDDLEWARE = True
 
-IS_HEROKU = 0
+IS_HEROKU = 1
 
 
 @bot.middleware_handler(update_types=['message'])
