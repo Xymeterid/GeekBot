@@ -1,4 +1,3 @@
-import codecs
 import os
 import re
 import telebot
@@ -16,7 +15,7 @@ server = Flask(__name__)
 
 apihelper.ENABLE_MIDDLEWARE = True
 
-IS_HEROKU = 1
+IS_HEROKU = 0
 
 
 @bot.middleware_handler(update_types=['message'])
@@ -24,10 +23,16 @@ def modify_message(bot_instance, message):
     if message.text is None:
         return
     message.no_command_text = re.sub("/(\w*)", "", message.text, 1).strip()
+    message.no_command_text = re.sub("@(\w*)", "", message.no_command_text, 1).strip()
     if user_dao.find_by_tg_id(message.from_user.id) is not None:
         message.user_registered = True
     else:
         message.user_registered = False
+
+
+"-----------------------------------------------------------------------"
+"----------------------------SEARCH COMMANDS----------------------------"
+"-----------------------------------------------------------------------"
 
 
 @bot.message_handler(commands=['what_dis_uwu'])
@@ -82,15 +87,21 @@ def find_anime(name):
     for user in all_users:
         if user['a_list']['type'] == "anilist":
             response_for_user = anilist_api_logic.find_anime_in_users_anilist(anilist_id, user['a_list']['username'])
-            if response.status_code == 200:
+            if response_for_user.status_code == 200:
                 response_for_user_json = (response_for_user.json())['data']['MediaList']
                 user_info = bot.get_chat_member(user["tg_id"], user["tg_id"]).user
-                result_postfix += get_user_display_name(user_info) + " - " + str(response_for_user_json['score']) + "/10"
+                result_postfix += get_user_display_name(user_info) \
+                    + " - " + str(response_for_user_json['score']) + "/10\n"
 
     if result_postfix != "":
         result_prefix += "\n<b>В анімелістах у:</b>\n" + result_postfix
 
     return result_prefix
+
+
+"----------------------------------------------------------------------"
+"----------------------------ALIAS COMMANDS----------------------------"
+"----------------------------------------------------------------------"
 
 
 @bot.message_handler(commands=['add_alias'])
@@ -136,6 +147,11 @@ def delete_alias(message):
         bot.reply_to(message, open("templates/alias_deletion_failure_no_such_alias.html", encoding="utf-8").read())
 
 
+"---------------------------------------------------------------------"
+"----------------------------USER COMMANDS----------------------------"
+"---------------------------------------------------------------------"
+
+
 @bot.message_handler(commands=['register_me'])
 def register_user(message):
     user_id = message.from_user.id
@@ -144,6 +160,11 @@ def register_user(message):
     else:
         user_dao.insert(user_id)
         bot.reply_to(message, open("templates/user_created.html", encoding="utf-8").read())
+
+
+"--------------------------------------------------------------------------"
+"----------------------------ANIMELIST COMMANDS----------------------------"
+"--------------------------------------------------------------------------"
 
 
 @bot.message_handler(commands=['add_list'])
@@ -205,8 +226,8 @@ def show_a_lists(message):
     output = ""
     for user in all_list_users:
         current_user = bot.get_chat_member(user["tg_id"], user["tg_id"]).user
-        output += get_user_display_name(current_user)
-        output += " -> " + user["a_list"]["url"] + "\n"
+        output += get_user_display_name(current_user) + "\n"
+        output += "" + user["a_list"]["url"] + "\n\n"
     bot.reply_to(message, output)
 
 
@@ -218,8 +239,29 @@ def get_user_display_name(user):
         output += user.last_name + " "
     return output.strip()
 
+
+"----------------------------------------------------------------------------"
+"----------------------------ACHIEVEMENT COMMANDS----------------------------"
+"----------------------------------------------------------------------------"
+
+
+"/create_achievement Написати в гік-чат||Напиши будь що в нашу флудилку, https://t.me/geeKlubflood||100||1"
+
+
+@bot.message_handler(commands=['create_achievement'])
+def create_achievement(message):
+    if message.from_user.username is None:
+        bot.reply_to(message, open("templates/a_lists_list_empty.html", encoding="utf-8").read())
+        return
+
+
+"--------------------------------------------------------------"
+"----------------------------SERVER----------------------------"
+"--------------------------------------------------------------"
+
+
 @server.route('/' + TOKEN, methods=['POST'])
-def getMessage():
+def get_message():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
 
@@ -237,4 +279,3 @@ if __name__ == "__main__":
     else:
         bot.remove_webhook()
         bot.polling(none_stop=True, interval=0)
-
