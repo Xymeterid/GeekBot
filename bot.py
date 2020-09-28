@@ -172,7 +172,9 @@ def add_a_list(message):
     if not message.user_registered:
         bot.reply_to(message, open("templates/user_not_registered.html", encoding="utf-8").read())
         return
-    if re.search("https://((anilist\.co/user/.+/animelist)|(myanimelist\.net/profile/.+))",
+    if re.search("https://((anilist\.co/user/.+/animelist)|"
+                 "(myanimelist\.net/profile/.+)|"
+                 "(myanimelist\.net/animelist/.+))",
                  message.no_command_text) is None:
         bot.reply_to(message, open("templates/a_list_site_not_supported.html", encoding="utf-8").read())
         return
